@@ -2,7 +2,7 @@ from flask import Flask, request
 from pymongo import MongoClient
 from errorHandler import jsonErrorHandler
 from bson.objectid import ObjectId
-from check import checkUser,listMessages
+from check import checkUser,listMessages, listMessagesUser
 import json
 
 app = Flask(__name__)
@@ -39,8 +39,14 @@ def insertMessage(chat_id, user_id,text):
 
 @jsonErrorHandler
 @app.route('/chat/list/<chat_id>')
-def listUsersChat(chat_id):
-    ok= listMessages(chat_id)
+def listMessaggesChat(chat_id):
+    ok = listMessages(chat_id)
+    return json.dumps(ok)
+
+@jsonErrorHandler
+@app.route('/chat/list/user/<chat_id>/<user_id>')
+def listMessagesUserChat(chat_id, user_id):
+    ok = listMessagesUser(chat_id, user_id)
     return json.dumps(ok)
 
 
