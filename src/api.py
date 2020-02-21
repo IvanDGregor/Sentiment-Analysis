@@ -2,6 +2,7 @@ from flask import Flask, request
 from pymongo import MongoClient
 from errorHandler import jsonErrorHandler
 from bson.objectid import ObjectId
+from check import checkUser,listMessages
 
 app = Flask(__name__)
 
@@ -26,14 +27,19 @@ def insertChat():
 @app.route('/chat/<chat_id>/adduser/<user_id>')
 def insertUserChat(chat_id, user_id):
     mycol = mydb["chat"]
-    add_user = mycol.update_one({'_id':ObjectId(chat_id)}, {"$set": {"users_ids": ObjectId(user_id)}})
+    add_user = mycol.update({'_id':ObjectId(chat_id)}, {"$push": {"users_ids": ObjectId(user_id)}})
     return str(add_user)
-app.run("0.0.0.0", 5000, debug=True)
+
 
 @jsonErrorHandler
-@app.route('/chat/<chat_id>/addmessage/<user_id>/<mess_id>')
-def insertMessage(chat_id, user_id, mess_id):
-    mycol = mydb["chat"]
-    add_user = mycol.update_one({'_id':ObjectId(chat_id)}, {"$set": {"users_ids": ObjectId(user_id)}})
-    return str(add_user)
+@app.route('/messages/<chat_id>/addmessage/<user_id>/<text>')
+def insertMessage(chat_id, user_id,text):
+    return checkUser(chat_id,user_id,text)
+
+@jsonErrorHandler
+@app.route('/chat/list/<chat_id>')
+def listUsersChat(chat_id):
+    return listMessages(chat_id)
+
+
 app.run("0.0.0.0", 5000, debug=True)
