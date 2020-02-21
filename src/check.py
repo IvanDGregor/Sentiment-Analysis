@@ -29,6 +29,7 @@ def listMessages(chat_id):
     if find_chat.count() <= 0:
         raise NameError(f"Not found Chat with this Id: {chat_id}")
     else:
-        all_messages = str(mycol.find({"_id": {"$eq": ObjectId(chat_id)}}, {"_id": 0, "text": 1}))
+        mycol = mydb["messages"]
+        all_messages = list(mycol.find({"chat_id": {"$eq": ObjectId(chat_id)}}, {"_id": 0, "text": 1}))
         print(all_messages)
-        return all_messages
+    return all_messages
