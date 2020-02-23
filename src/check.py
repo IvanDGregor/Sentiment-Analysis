@@ -1,22 +1,27 @@
 from flask import Flask, request
 from pymongo import MongoClient
 from errorHandler import jsonErrorHandler
-from bson.objectid import ObjectId
+from bson import json_util, ObjectId
+import json
 
 #Database
 client = MongoClient("mongodb://localhost:27017")
 mydb = client["sentiment"]
 
-#Check the User exists and Chat exists and the user exists in this chat
+#Check the User and Chat exists and the user exists in this chat
 def checkUser(chat_id, user_id, text):
     mycol = mydb["users"]
     find_user = mycol.find({"_id": {"$eq": ObjectId(user_id)}})
     mycol = mydb["chat"]
-    find_chat = mycol.find({"$and":[ {"_id":{"$eq": ObjectId(chat_id)}}, {"users_ids":{"$eq" : ObjectId(user_id)}}]})
+    find_chat = mycol.find({"_id": {"$eq": ObjectId(chat_id)}})
+    mycol = mydb["chat"]
+    find_user_chat = mycol.find({"$and":[ {"_id":{"$eq": ObjectId(chat_id)}}, {"users_ids":{"$eq" : ObjectId(user_id)}}]})
     if find_user.count() <= 0:
         raise NameError(f"Not found User with this Id: {user_id}")
     elif find_chat.count() <= 0:
         raise NameError(f"Not found Chat with this Id: {chat_id}")
+    elif find_user_chat.count() <= 0:
+        raise NameError(f"Not found User with this Id {user_id} in this chat: {chat_id}")
     else:
         mycol = mydb["messages"]
         add_mess = mycol.insert_one({'chat_id':ObjectId(chat_id), "user_id": ObjectId(user_id), "text": text}).inserted_id
@@ -30,11 +35,11 @@ def listMessages(chat_id):
         raise NameError(f"Not found Chat with this Id: {chat_id}")
     else:
         mycol = mydb["messages"]
-        all_messages = list(mycol.find({"chat_id": {"$eq": ObjectId(chat_id)}}, {"_id": 0,"text": 1}))
-        print(all_messages)
+        all_messages = list(mycol.find({"chat_id": {"$eq": ObjectId(chat_id)}}, {"_id": 0,"user_id":1 ,"text": 1}))
+        all_messages = json.loads(json_util.dumps(all_messages))
     return all_messages
 
-#List all messages for one user and check chat exists
+#List all messages for one user in a chat
 def listMessagesUser(chat_id,user_id):
     mycol = mydb["users"]
     find_user = mycol.find({"_id": {"$eq": ObjectId(user_id)}})
@@ -46,6 +51,18 @@ def listMessagesUser(chat_id,user_id):
         raise NameError(f"Not found Chat with this Id: {chat_id}")
     else:
         mycol = mydb["messages"]
-        all_messages_user = list(mycol.find({"$and": [{"chat_id": {"$eq": ObjectId(chat_id)}}, {"user_id": {"$eq": ObjectId(user_id)}}]}, {"_id": 0,"text": 1}))
-        print(all_messages_user)
+        all_messages_user = list(mycol.find({"$and": [{"chat_id": {"$eq": ObjectId(chat_id)}}, {"user_id": {"$eq": ObjectId(user_id)}}]}, {"_id": 0,"user_id": 1,"text": 1}))
+        all_messages_user = json.loads(json_util.dumps(all_messages_user))
     return all_messages_user
+
+#List all users in a chat
+def listAllUsers(chat_id):
+    mycol = mydb["chat"]
+    find_chat = mycol.find({"_id": {"$eq": ObjectId(chat_id)}})
+    if find_chat.count() <= 0:
+        raise NameError(f"Not found Chat with this Id: {chat_id}")
+    else:
+        mycol = mydb["chat"]
+        all_users = list(mycol.find({"_id": {"$eq": ObjectId(chat_id)}}, {"_id":0,"users_ids": 1}))
+        all_users = json.loads(json_util.dumps(all_users))
+    return all_users
