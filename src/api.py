@@ -3,7 +3,7 @@ from pymongo import MongoClient
 from errorHandler import jsonErrorHandler
 from bson.objectid import ObjectId
 from check import checkUser, listMessages, listMessagesUser, listAllUsers
-from analyze import analyzeResult
+from analyze import analyzeResult, analyzeAllResult
 import json
 
 app = Flask(__name__)
@@ -62,11 +62,18 @@ def listAllUsersChat(chat_id):
     ok = listAllUsers(chat_id)
     return json.dumps(ok)
 
-#Analyze messages from chat with `NLTK` sentiment analysis
+#Analyze each chat message independently with 'NLTK' sentiment analysis
 @jsonErrorHandler
-@app.route('/chat/analyze/<chat_id>')
+@app.route('/chat/analyze/each/<chat_id>')
 def analyzeMessages(chat_id):
     ok = analyzeResult(chat_id)
+    return json.dumps(ok)
+
+#Analyze all chat messages with 'NLTK' sentiment analysis
+@jsonErrorHandler
+@app.route('/chat/analyze/all/<chat_id>')
+def analyzeAllMessages(chat_id):
+    ok = analyzeAllResult(chat_id)
     return json.dumps(ok)
 
 app.run("0.0.0.0", 5000, debug=True)
