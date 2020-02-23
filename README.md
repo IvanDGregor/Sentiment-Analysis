@@ -1,1 +1,3 @@
-# Sentiment-Analysis
+# Sentiment Analysis
+
+![Portada](images/sentimentanalysis.jpg)
