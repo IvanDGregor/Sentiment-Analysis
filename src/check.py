@@ -82,5 +82,9 @@ def changeIdForName(data):
 #Change User_id for name with only user_id
 def changeId(data):
     mycol = mydb['users']
-    for i in data:
-        print(i)
+    names= []
+    for user_id in data:
+        name_user = mycol.find({"_id": {"$eq": ObjectId(user_id)}}, {"_id": 0,"name":1})
+        names.append(name_user)
+        names = json.loads(json_util.dumps(names))
+    return names

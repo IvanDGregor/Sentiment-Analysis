@@ -25,7 +25,7 @@ def insertUser(name):
 @app.route('/chat/create/<name>')
 def insertChat(name):
     mycol = mydb["chat"]
-    chat_id = mycol.insert_one({"name": name,"users_ids": ""}).inserted_id
+    chat_id = mycol.insert_one({"name": name,"users_ids": []}).inserted_id
     return str(chat_id)
 
 #Add user to chat

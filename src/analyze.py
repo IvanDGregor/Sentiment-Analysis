@@ -64,7 +64,7 @@ def analyzeRecommendUsers(user_id, chat_id):
     df = pd.DataFrame(scores).set_index('user_id')
     df = df.drop(columns =['chat_id'])
     df = pd.pivot_table(df, index='user_id')
-    distances = pd.DataFrame(1/(1 + squareform(pdist(df.T, 'euclidean'))), 
+    distances = pd.DataFrame(1/(1 + squareform(pdist(df, 'euclidean'))), 
                          index=df.index, columns=df.index)
     for _ in distances:
         similarities = distances[user_id].sort_values(ascending=False)[1:4]
