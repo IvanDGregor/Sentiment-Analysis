@@ -17,8 +17,9 @@ mydb = client["sentiment"]
 nltk.download('vader_lexicon')
 sia = SentimentIntensityAnalyzer()
 
-#Analyze the sentiment of each chat message independently
+
 def analyzeResult(chat_id):
+    #Analyze the sentiment of each chat message independently
     all_messages = listMessages(chat_id)
     result_analyze = []
     for i in all_messages:
@@ -26,8 +27,9 @@ def analyzeResult(chat_id):
         result_analyze.append((i['user_id']['$oid'],score))
     return result_analyze
 
-#Analyze the sentiment of all chat messages
+
 def analyzeAllResult(chat_id):
+    #Analyze the sentiment of all chat messages
     all_messages = listMessages(chat_id)
     total_score = {'id': chat_id,'neg': 0.0, 'neu': 0.0, 'pos': 0.0}
     for i in all_messages:
@@ -37,8 +39,9 @@ def analyzeAllResult(chat_id):
         total_score['neu'] += score['neu']
     return total_score
 
-#Analyze the sentiment of all chat messages for especific user
+
 def analyzeResultUser(chat_id, user_id):
+    #Analyze the sentiment of all chat messages for especific user
     all_messages = listMessagesUser(chat_id, user_id)
     total_score = {'user_id': user_id, "chat_id": chat_id, 'neg': 0.0, 'neu': 0.0, 'pos': 0.0}
     for i in all_messages:
@@ -48,8 +51,9 @@ def analyzeResultUser(chat_id, user_id):
         total_score['neu'] += score['neu']
     return total_score
 
-#Analyze the sentiment for all users in a chat
+
 def analyzeUsers(chat_id):
+    #Analyze the sentiment for all users in a chat
     all_users = listAllUsers(chat_id)
     all_scores = []
     for i in all_users:
@@ -58,8 +62,9 @@ def analyzeUsers(chat_id):
             all_scores.append(score)
     return all_scores
 
-#Analyze the sentiment for all users in a chat and return 3 user recommendation
+
 def analyzeRecommendUsers(user_id, chat_id):
+    #Analyze the sentiment for all users in a chat and return 3 user recommendation
     scores = analyzeUsers(chat_id)
     df = pd.DataFrame(scores).set_index('user_id')
     df = df.drop(columns =['chat_id'])
