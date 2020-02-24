@@ -2,14 +2,15 @@ from flask import Flask, request
 from pymongo import MongoClient
 from errorHandler import jsonErrorHandler
 from bson.objectid import ObjectId
-from check import checkUser, listMessages, listMessagesUser, listAllUsers
-from analyze import analyzeResult, analyzeAllResult
+from check import checkUser, listMessages, listMessagesUser, listAllUsers, changeIdForName
+from analyze import analyzeResult, analyzeAllResult, analyzeResultUser, analyzeUsers, analyzeRecommendUsers
 import json
 
 app = Flask(__name__)
 
 client = MongoClient("mongodb://localhost:27017")
 mydb = client["sentiment"]
+
 
 #Create user
 @jsonErrorHandler
@@ -21,10 +22,10 @@ def insertUser(name):
 
 #Create chat
 @jsonErrorHandler
-@app.route('/chat/create')
-def insertChat():
+@app.route('/chat/create/<name>')
+def insertChat(name):
     mycol = mydb["chat"]
-    chat_id = mycol.insert_one({"users_ids": ""}).inserted_id
+    chat_id = mycol.insert_one({"name": name,"users_ids": ""}).inserted_id
     return str(chat_id)
 
 #Add user to chat
@@ -60,6 +61,7 @@ def listMessagesUserChat(chat_id, user_id):
 @app.route('/chat/list/users/<chat_id>')
 def listAllUsersChat(chat_id):
     ok = listAllUsers(chat_id)
+    ok = changeIdForName(ok)
     return json.dumps(ok)
 
 #Analyze each chat message independently with 'NLTK' sentiment analysis
@@ -74,6 +76,27 @@ def analyzeMessages(chat_id):
 @app.route('/chat/analyze/all/<chat_id>')
 def analyzeAllMessages(chat_id):
     ok = analyzeAllResult(chat_id)
+    return json.dumps(ok)
+
+#Analyze all chat messages with 'NLTK' sentiment analysis for a specific user
+@jsonErrorHandler
+@app.route('/chat/analyze/all/user/<chat_id>/<user_id>')
+def analyzeAllMessagesUser(chat_id, user_id):
+    ok = analyzeResultUser(chat_id, user_id)
+    return json.dumps(ok)
+
+#Analyze all chat messages with 'NLTK' sentiment analysis for each user
+@jsonErrorHandler
+@app.route('/chat/analyze/all/each_user/<chat_id>')
+def analyzeAllUsers(chat_id):
+    ok = analyzeUsers(chat_id)
+    return json.dumps(ok)
+
+#Recommend 3 users for a specific user
+@jsonErrorHandler
+@app.route('/user/<user_id>/recommend/<chat_id>')
+def recommendUsers(user_id, chat_id):
+    ok = analyzeRecommendUsers(user_id, chat_id)
     return json.dumps(ok)
 
 app.run("0.0.0.0", 5000, debug=True)

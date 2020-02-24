@@ -63,6 +63,24 @@ def listAllUsers(chat_id):
         raise NameError(f"Not found Chat with this Id: {chat_id}")
     else:
         mycol = mydb["chat"]
-        all_users = list(mycol.find({"_id": {"$eq": ObjectId(chat_id)}}, {"_id":0,"users_ids": 1}))
+        all_users = mycol.find({"_id": {"$eq": ObjectId(chat_id)}}, {"_id":0,"users_ids": 1})
         all_users = json.loads(json_util.dumps(all_users))
     return all_users
+
+#Change User_id for name in DB with all users
+def changeIdForName(data):
+    mycol = mydb["users"]
+    names = []
+    for i in data:
+        for j in i['users_ids']:
+            user_id = j['$oid']
+            name_user = mycol.find({"_id": {"$eq": ObjectId(user_id)}}, {"_id": 0,"name":1})
+            names.append(name_user)
+        names = json.loads(json_util.dumps(names))
+        return names
+
+#Change User_id for name with only user_id
+def changeId(data):
+    mycol = mydb['users']
+    for i in data:
+        print(i)
